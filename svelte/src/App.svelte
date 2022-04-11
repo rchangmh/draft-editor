@@ -1,79 +1,67 @@
 <script>
-
   // import Editor from './Editor.svelte'
   import MyEditor from './MyEditor.svelte'
   import Heart from './Heart.svelte'
   import { onMount } from 'svelte'
   import { fade, fly } from 'svelte/transition'
-  import { wordCount, 
-    percent, 
-    wordCountWritten, 
-    wordCountUnwritten, 
-    dark, 
-    fontSize,
-    width } from './store.js'
+  import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
 
   let menu = false
-  
+  let title = 'Draft'
+  let editTitleToggle = false
+
   // Dark Mode
   $: document.documentElement.setAttribute('class', $dark ? 'dark-mode' : '')
 
   // Keep width within range.
-  $: if ($width > 1200) { $width -= 25 } 
-    else if ($width < 500) { $width += 25 }
+  $: if ($width > 1200) {
+    $width -= 25
+  } else if ($width < 500) {
+    $width += 25
+  }
 
   // Keep font within range.
-  $: if ($fontSize > 30) { $fontSize -= 1 } 
-    else if ($fontSize < 1) { $fontSize += 1 }
+  $: if ($fontSize > 30) {
+    $fontSize -= 1
+  } else if ($fontSize < 1) {
+    $fontSize += 1
+  }
 
   function clear() {
     function listener(e) {
-      e.clipboardData.setData("text/html", document.body.innerHTML)
-      e.clipboardData.setData("text/plain", document.body.innerText)
+      e.clipboardData.setData('text/html', document.body.innerHTML)
+      e.clipboardData.setData('text/plain', document.body.innerText)
       e.preventDefault()
     }
-    document.addEventListener("copy", listener)
-    document.execCommand("copy")
-    document.removeEventListener("copy", listener)
+    document.addEventListener('copy', listener)
+    document.execCommand('copy')
+    document.removeEventListener('copy', listener)
     localStorage.clear()
     location.reload()
   }
-
 </script>
 
-
 <body>
+  <!-- Title  -->
+  <div class="title">
+    <title>{title}</title>
+    {#if editTitleToggle}
+      <input bind:value={title} on:focusout={() => (editTitleToggle = !editTitleToggle)} autofocus />
+    {:else}
+      <h2 on:click={() => (editTitleToggle = !editTitleToggle)}>{title}</h2>
+    {/if}
+  </div>
 
   <!-- Menu  -->
-  <button 
-    style="position: fixed; bottom: 16px; left: 16px;"
-    on:click={() => menu = !menu}>
-    🦆
-  </button>
+  <button style="position: fixed; bottom: 16px; left: 16px;" on:click={() => (menu = !menu)}> 🦆 </button>
 
   {#if menu}
-    <div 
-      class=menu 
-      in:fly={{ x: -200, duration: 350 }} 
-      out:fade>
-      <button 
-        on:click={() => $fontSize += 1}>
-        ➕
-      </button>
-      <button 
-        on:click={() => $fontSize -= 1}>
-        ➖
-      </button>
-      <button 
-        on:click={() => $width += 25}>
-        ◀▶
-      </button>
-      <button 
-        on:click={() => $width -= 25}>
-        ▶◀
-      </button>
-      <button 
-        on:click={() => $dark ? $dark = 0 : $dark = 1}> 
+    <div class="menu" in:fly={{ x: -200, duration: 350 }} out:fade>
+      <button on:click={() => ($fontSize += 1)}> ➕ </button>
+      <button on:click={() => ($fontSize -= 1)}> ➖ </button>
+      <button on:click={() => ($width += 25)}> ◀▶ </button>
+      <button on:click={() => ($width -= 25)}> ▶◀ </button>
+      <button on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
         {$dark ? '🌞' : '🌙'}
       </button>
     </div>
@@ -81,46 +69,52 @@
 
   <!-- Editor  -->
 
-  <div class='editor {$dark ? 'dark-mode' : ''}'>
-    <MyEditor editorName='Written'/>
-    <MyEditor editorName='Unwritten'/>
+  <div class="editor {$dark ? 'dark-mode' : ''}">
+    <MyEditor editorName="Written" />
+    <MyEditor editorName="Unwritten" />
   </div>
 
   <!-- Progress  -->
-  <div class='progress {$dark ? 'dark-mode' : ''}'>
+  <div class="progress {$dark ? 'dark-mode' : ''}">
     {$wordCountWritten} / {$wordCountUnwritten > -1 ? $wordCountUnwritten : '?'}
-    <h2 style='margin: 8px; font-size: 22px;'>{$percent}%</h2>
-    <progress value={$percent} style='width: 100%' max='100'></progress>
+    <h2 style="margin: 8px; font-size: 22px;">{$percent}%</h2>
+    <progress value={$percent} style="width: 100%" max="100" />
     <br />
     {#if $percent == 100 && $wordCountWritten > 100}
-      <div style="position:fixed; bottom: 111px;" >
+      <div style="position:fixed; bottom: 111px;">
         <Heart />
       </div>
     {/if}
   </div>
-
 </body>
 
-
 <style>
-
   /* Global & Editors */
   body {
     width: 88%;
     margin: 0 auto;
     position: relative;
     padding: 8px;
-    font-family: 'Graphik', 'AGaramond', 'Lyon'; 
+    font-family: 'Graphik', 'AGaramond', 'Lyon';
     max-width: 1200px;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+  input {
+    border: 1px gray;
+    border-radius: 13px;
   }
 
   :global(div.codex-editor__redactor) {
     padding-bottom: 50px !important;
   }
-  
+
   :global(.dark-mode) {
     background-color: #373737;
-    color: #F6F6F6;
+    color: #f6f6f6;
   }
 
   @font-face {
@@ -156,7 +150,7 @@
     height: auto;
     width: auto;
     border-radius: 15px;
-    z-index: 3
+    z-index: 3;
   }
 
   button {
@@ -175,7 +169,7 @@
   }
 
   button:focus {
-    background: #F7E5FF;
+    background: #f7e5ff;
   }
 
   /* Progress */
@@ -197,7 +191,6 @@
   .dark-mode.progress {
     background: #373737;
     border: solid yellow 1px;
-    color: #F6F6F6;
+    color: #f6f6f6;
   }
-
 </style>
