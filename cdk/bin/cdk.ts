@@ -8,6 +8,6 @@ const app = new cdk.App()
 const draftStack = new StaticStack(app, 'draftStack', {
   staticAssetsPath: path.join(__dirname, '..', '..', 'svelte', 'public'),
   hostedZoneId: 'Z03304211EX845FJI16N9',
-  zoneName: 'cdk.link',
   subdomainName: 'draft',
+  zoneName: 'cdk.link',
 })
