@@ -1,0 +1,295 @@
+<script>
+
+  import { onMount, tick } from 'svelte'
+  import { wordCount, dark, fontSize } from './store.js'
+  export let editorName
+
+  // Ctrl + K : show input fixed
+  // highlight colors
+  // insert linebreaks between paragraphs
+  
+  onMount(() => {
+    updateWordCount(document.getElementById(editorName).innerText)
+  })
+
+  let innerHtml = localStorage.getItem(`${editorName}Html`) || ''
+  $: localStorage.setItem(`${editorName}Html`, innerHtml)
+  // $: {
+  //   innerHtml = replaceAll(innerHtml, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+  //   setCaret(window.getSelection().focusNode.parentElement, caretPos)
+  // }
+ 
+  function updateWordCount(innerText) {
+    let count = 0
+    innerText.split('\n').forEach(p => {
+      if (p != '') { count += p.split(' ').length }
+    })
+    wordCount.update(() => wordCount[editorName] = count )
+  }
+
+  // Title
+  let editTitleToggle = false
+  let title = localStorage.getItem(`${editorName}Title`) || ''
+  $: localStorage.setItem(`${editorName}Title`, title)
+
+  // Font
+  let fontFamily = localStorage.getItem(`${editorName}Font`) || 'AGaramond'
+  $: localStorage.setItem(`${editorName}Font`, fontFamily)
+  let fonts = ['AGaramond', 'Lyon', 'Garamond', 'Graphik', 'Consolas']
+
+  function isLink() {
+    if (window.getSelection().toString !== '') {
+      const selection = window.getSelection().getRangeAt(0)
+      if (selection) {
+        if (selection.startContainer.parentNode.tagName === 'A'
+        || selection.endContainer.parentNode.tagName === 'A') {
+          return [true, selection]
+        } else { return false }
+      } else { return false }
+    }
+  }
+
+  async function handleKeydown(e) {
+    let currentEl = window.getSelection().focusNode.parentElement
+    let caretPos = getCaretPosition(currentEl)
+    innerHtml = replaceAll(innerHtml, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+    setCaret(currentEl, caretPos)
+    console.log(caretPos)
+    // setCaret(caretPos)
+    if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 'k') {
+      e.preventDefault()
+      if (!isLink()) {
+        document.execCommand("CreateLink", false, window.prompt("URL: "))
+      } else {
+        document.execCommand("unlink", false)
+      }
+      // console.log(window.getSelection())
+      // const { selectionStart, selectionEnd, value } = this
+      // const selection = value.slice(selectionStart, selectionEnd)
+      // const replacement = /[a-z]/.test(selection)
+      //   ? selection.toUpperCase()
+      //   : selection.toLowerCase()
+      // text = (
+      //   value.slice(0, selectionStart) +
+      //   replacement +
+      //   value.slice(selectionEnd)
+      // )
+      // await tick()
+      // this.selectionStart = selectionStart
+      // this.selectionEnd = selectionEnd
+    }
+  }
+
+  function handleCopy() {
+    // let paragraphs = Array.from(document.getElementById(editorName).querySelectorAll('div'))
+    // console.log(paragraphs)
+    // let html = []
+    // let text = []
+    // paragraphs.forEach(paragraph => {
+      // let paragraphHtml = replaceAll(paragraph.innerHTML, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+    //   html += [`<p>${paragraphHtml}</p>`]
+    //   let paragraphText = replaceAll(paragraph.innerText, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+    //   text += [paragraphText]
+    // })
+    // copyToClip(html, text)
+    // console.log(innerHtml)
+    // console.log(html)
+    // rerender()
+    // innerHtml = replaceAll(innerHtml, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+    innerHtml = replaceAll(innerHtml, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+  }
+
+  function replaceAll(str, findReplaceList) {
+    findReplaceList.forEach(find_replace => {
+      str = str.replace(new RegExp(find_replace[0], 'g'), find_replace[1])
+    })
+    return str
+  }
+
+  function copyToClip(html, text) {
+    function listener(e) {
+      e.clipboardData.setData("text/html", html)
+      e.clipboardData.setData("text/plain", text)
+      e.preventDefault()
+    }
+    document.addEventListener("copy", listener)
+    document.execCommand("copy")
+    document.removeEventListener("copy", listener)
+  }
+
+  function getCaretPosition(editableDiv) {
+    var caretPos = 0,
+      sel, range;
+    if (window.getSelection) {
+      sel = window.getSelection();
+      if (sel.rangeCount) {
+        range = sel.getRangeAt(0);
+        if (range.commonAncestorContainer.parentNode == editableDiv) {
+          caretPos = range.endOffset;
+        }
+      }
+    } else if (document.selection && document.selection.createRange) {
+      range = document.selection.createRange();
+      if (range.parentElement() == editableDiv) {
+        var tempEl = document.createElement("span");
+        editableDiv.insertBefore(tempEl, editableDiv.firstChild);
+        var tempRange = range.duplicate();
+        tempRange.moveToElementText(tempEl);
+        tempRange.setEndPoint("EndToEnd", range);
+        caretPos = tempRange.text.length;
+      }
+    }
+    return caretPos;
+  }
+
+  function setCaret(element, caretPos) {
+      let range = document.createRange()
+      let sel = window.getSelection()
+      range.setStart(element.childNodes[0], caretPos)
+      range.collapse(true)
+      sel.removeAllRanges()
+      sel.addRange(range)
+      console.log(`Set to ${caretPos}`)
+  }
+
+</script>
+
+<svelte:window 
+on:keydown={handleKeydown}
+/>
+
+<div>
+
+  <!-- Header -->
+  <div class='header {$dark ? 'dark-mode' : ''}'>
+    <div class=header-left>
+    {#if editTitleToggle}
+      <input 
+        class=header-input
+        bind:value={title}
+        on:focusout={() => editTitleToggle = !editTitleToggle}
+        autofocus
+      />
+    {:else}
+      <h1 
+        on:click={() => editTitleToggle = !editTitleToggle}>
+        {title.trim() || `[${editorName.toLowerCase()}]`}
+      </h1>
+    {/if}
+    <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
+  </div>
+    
+    <div class=header-right>
+      
+      <button 
+        class="duck {$dark ? 'dark-mode' : ''}" 
+        on:click={handleCopy}>
+        📋
+      </button>
+      
+      <label for="font"></label>
+      <select 
+        bind:value={fontFamily}
+        style='font-family: {fontFamily}'
+        class:dark-mode={$dark}>
+        {#each fonts as font}
+          <option value='{font}' style='font-family: {font}'>{font}</option>
+        {/each}
+      </select>
+    
+    </div>
+  </div>
+
+  <!-- Editor -->
+
+  <div 
+    id={editorName}
+    class='editor'
+    style="font-size: {$fontSize*2}px; font-family: {fontFamily};"
+    contenteditable="true"
+    bind:innerHTML={innerHtml}
+    on:input={e => updateWordCount(e.target.textContent)}
+    >
+  </div>
+
+</div>
+
+
+<style>
+
+  :global(::selection) {
+    background-color: rgba(217, 245, 255,0.5);
+  }
+
+
+  .editor {
+    padding-top: 30px;
+    padding-bottom: 100px;
+    margin: 0 auto;
+    width: 750px;
+    outline: none;
+    line-height: 1.6;
+    text-indent: 0;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid black;
+    justify-content: space-between;
+  }
+
+  .header-left, .header-right {
+    display:flex;
+    align-items: center;
+  }
+
+  .header-input, button, select {
+    margin: 3px;
+    padding: 8px;
+    border: 1px solid gray;
+    border-radius: 2px;
+    background: inherit;
+    font-size: 18px;
+    height: 40px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  select {
+    width: 135px;
+  }
+
+  button, select {
+    cursor: pointer;
+    outline: none;
+  }
+
+  button:active {
+    background: #F7E5FF !important;
+  }
+
+  button:focus, select:focus {
+    background: #FCF0FF;
+  }
+
+  .dark-mode button:active {
+    background: #71318D !important;
+  }
+
+  .dark-mode button:focus, .dark-mode select:focus {
+    background: #57236E;
+  }
+
+  .header-input, h1 {
+    font-family: inherit;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .dark-mode.header {
+    border-bottom: 1px solid white;
+  }
+
+</style>
