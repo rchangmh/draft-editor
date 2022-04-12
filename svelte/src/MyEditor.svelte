@@ -1,9 +1,8 @@
 <script>
-
   import { onMount } from 'svelte'
   import { wordCount, dark, fontSize, width } from './store.js'
   export let editorName
-  
+
   onMount(() => {
     updateWordCount(document.getElementById(editorName).innerText)
   })
@@ -13,13 +12,15 @@
 
   // let width = localStorage.getItem(`width`) || ''
   // $: localStorage.setItem(`width`, width)
- 
+
   function updateWordCount(innerText) {
     let count = 0
     innerText.split('\n').forEach(p => {
-      if (p != '') { count += p.split(' ').length }
+      if (p != '') {
+        count += p.split(' ').length
+      }
     })
-    wordCount.update(() => wordCount[editorName] = count )
+    wordCount.update(() => (wordCount[editorName] = count))
   }
 
   // Title
@@ -36,12 +37,21 @@
     if (window.getSelection().toString !== '') {
       const selection = window.getSelection().getRangeAt(0)
       if (selection) {
-        if (selection.startContainer.parentNode.tagName === 'A'
-        || selection.endContainer.parentNode.tagName === 'A') {
+        if (selection.startContainer.parentNode.tagName === 'A' || selection.endContainer.parentNode.tagName === 'A') {
           return [true, selection]
-        } else { return false }
-      } else { return false }
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
     }
+  }
+
+  function convertToPlain(html) {
+    var tempDivElement = document.createElement('div')
+    tempDivElement.innerHTML = html
+    return tempDivElement.textContent || tempDivElement.innerText || ''
   }
 
   function save() {
@@ -54,6 +64,7 @@
     let sec = `${d.getSeconds()}`.padStart(2, '0')
     let date_key = `autosave_${editorName} ${mm}/${dd}/${yyyy} ${hr}:${min}:${sec}`
     localStorage.setItem(date_key, innerHtml)
+    navigator.clipboard.writeText(convertToPlain(innerHtml))
     // let focusNode = window.getSelection().focusNode
     // if (focusNode.parentElement.id == editorName) {
     //   localStorage.setItem(date_key, innerHtml)
@@ -61,14 +72,14 @@
   }
 
   function handleKeydown(e) {
-    if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 'k') {
+    if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.key == 'k') {
       e.preventDefault()
       if (!isLink()) {
-        document.execCommand("CreateLink", false, window.prompt("URL: "))
+        document.execCommand('CreateLink', false, window.prompt('URL: '))
       } else {
-        document.execCommand("unlink", false)
+        document.execCommand('unlink', false)
       }
-    } 
+    }
     // else if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 's') {
     //   e.preventDefault()
     //   handleCopy()
@@ -77,15 +88,20 @@
 
   function handleCopy() {
     save()
-    innerHtml = replaceAll(innerHtml, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
+    innerHtml = replaceAll(innerHtml, [
+      ['--', '—'],
+      [' "', ' “'],
+      ['" ', '” '],
+      ["'", '’'],
+    ])
     function listener(e) {
-      e.clipboardData.setData("text/html", innerHtml)
-      e.clipboardData.setData("text/plain", window.getSelection().focusNode)
+      e.clipboardData.setData('text/html', innerHtml)
+      e.clipboardData.setData('text/plain', window.getSelection().focusNode)
       e.preventDefault()
     }
-    document.addEventListener("copy", listener)
-    document.execCommand("copy")
-    document.removeEventListener("copy", listener)
+    document.addEventListener('copy', listener)
+    document.execCommand('copy')
+    document.removeEventListener('copy', listener)
   }
 
   function replaceAll(str, findReplaceList) {
@@ -94,76 +110,57 @@
     })
     return str
   }
-
 </script>
 
-<svelte:window 
-on:keydown={handleKeydown}
-/>
+<svelte:window on:keydown={handleKeydown} />
 
 <div>
-
   <!-- Header -->
-  <div class='header {$dark ? 'dark-mode' : ''}'>
-    <div class=header-left>
-    {#if editTitleToggle}
-      <input 
-        class=header-input
-        bind:value={title}
-        on:focusout={() => editTitleToggle = !editTitleToggle}
-        autofocus
-      />
-    {:else}
-      <h1 
-        on:click={() => editTitleToggle = !editTitleToggle}>
-        {title.trim() || `[${editorName.toLowerCase()}]`}
-      </h1>
-    {/if}
-    <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
-  </div>
-    
-    <div class=header-right>
-      
-      <button 
-        class="duck {$dark ? 'dark-mode' : ''}" 
-        on:click={handleCopy}>
-        📋💾
-      </button>
-      
-      <label for="font"></label>
-      <select 
-        bind:value={fontFamily}
-        style='font-family: {fontFamily}'
-        class:dark-mode={$dark}>
+  <div class="header {$dark ? 'dark-mode' : ''}">
+    <div class="header-left">
+      {#if editTitleToggle}
+        <input
+          class="header-input"
+          bind:value={title}
+          on:focusout={() => (editTitleToggle = !editTitleToggle)}
+          autofocus
+        />
+      {:else}
+        <h1 on:click={() => (editTitleToggle = !editTitleToggle)}>
+          {title.trim() || `[${editorName.toLowerCase()}]`}
+        </h1>
+      {/if}
+      <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
+    </div>
+
+    <div class="header-right">
+      <button class="duck {$dark ? 'dark-mode' : ''}" on:click={save}> 💾 & 📋 </button>
+
+      <label for="font" />
+      <select bind:value={fontFamily} style="font-family: {fontFamily}" class:dark-mode={$dark}>
         {#each fonts as font}
-          <option value='{font}' style='font-family: {font}'>{font}</option>
+          <option value={font} style="font-family: {font}">{font}</option>
         {/each}
       </select>
-    
     </div>
   </div>
 
   <!-- Editor -->
 
-  <div 
+  <div
     id={editorName}
-    class='editor'
-    style="font-size: {$fontSize*2}px; font-family: {fontFamily}; width: {$width}px;"
+    class="editor"
+    style="font-size: {$fontSize * 2}px; font-family: {fontFamily}; width: {$width}px;"
     contenteditable="true"
     bind:innerHTML={innerHtml}
     on:input={e => updateWordCount(e.target.textContent)}
-    >
-  </div>
-
+  />
 </div>
 
-
 <style>
-
   :global(::selection) {
-    background-color: rgba(217, 245, 255,0.5);
+    background-color: rgba(217, 245, 255, 0.5);
   }
-
 
   .editor {
     padding-top: 30px;
@@ -183,12 +180,15 @@ on:keydown={handleKeydown}
     justify-content: space-between;
   }
 
-  .header-left, .header-right {
-    display:flex;
+  .header-left,
+  .header-right {
+    display: flex;
     align-items: center;
   }
 
-  .header-input, button, select {
+  .header-input,
+  button,
+  select {
     margin: 3px;
     padding: 8px;
     border: 1px solid gray;
@@ -204,28 +204,32 @@ on:keydown={handleKeydown}
     width: 135px;
   }
 
-  button, select {
+  button,
+  select {
     cursor: pointer;
     outline: none;
   }
 
   button:active {
-    background: #F7E5FF !important;
+    background: #f7e5ff !important;
   }
 
-  button:focus, select:focus {
-    background: #FCF0FF;
+  button:focus,
+  select:focus {
+    background: #fcf0ff;
   }
 
   .dark-mode button:active {
-    background: #71318D !important;
+    background: #71318d !important;
   }
 
-  .dark-mode button:focus, .dark-mode select:focus {
-    background: #57236E;
+  .dark-mode button:focus,
+  .dark-mode select:focus {
+    background: #57236e;
   }
 
-  .header-input, h1 {
+  .header-input,
+  h1 {
     font-family: inherit;
     font-size: 28px;
     font-weight: bold;
@@ -234,5 +238,4 @@ on:keydown={handleKeydown}
   .dark-mode.header {
     border-bottom: 1px solid white;
   }
-
 </style>
