@@ -19,9 +19,10 @@ export class StaticStack extends cdk.Stack {
     super(scope, id, props)
 
     const bucket = new s3.Bucket(this, 'bucket', {
-      websiteIndexDocument: 'index.html',
+      // websiteIndexDocument: 'index.html',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      publicReadAccess: true,
+      versioned: true,
+      // publicReadAccess: true,
     })
 
     const deployment = new s3deploy.BucketDeployment(this, 'deployment', {
@@ -42,6 +43,9 @@ export class StaticStack extends cdk.Stack {
       validation: acm.CertificateValidation.fromDns(domainZone),
     })
 
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'originAccessIdentity')
+    bucket.grantRead(originAccessIdentity)
+
     const distribution = new cloudfront.CloudFrontWebDistribution(this, 'distribution', {
       viewerCertificate: {
         aliases: [domainName],
@@ -54,6 +58,7 @@ export class StaticStack extends cdk.Stack {
         {
           s3OriginSource: {
             s3BucketSource: bucket,
+            originAccessIdentity,
           },
           behaviors: [
             {
