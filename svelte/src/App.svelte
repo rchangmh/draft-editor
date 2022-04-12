@@ -7,7 +7,9 @@
   import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
 
   let menu = false
-  let title = 'Draft'
+
+  let title = localStorage.getItem(`Title`) || 'Draft'
+  $: localStorage.setItem(`Title`, title)
   let editTitleToggle = false
 
   // Dark Mode
@@ -43,10 +45,10 @@
 
 <body>
   <!-- Title  -->
-  <div class="title">
+  <div class="title {$dark ? 'dark-mode' : ''}">
     <title>{title}</title>
     {#if editTitleToggle}
-      <input bind:value={title} on:focusout={() => (editTitleToggle = !editTitleToggle)} autofocus />
+      <h2><input bind:value={title} on:focusout={() => (editTitleToggle = !editTitleToggle)} autofocus /></h2>
     {:else}
       <h2 on:click={() => (editTitleToggle = !editTitleToggle)}>{title}</h2>
     {/if}
@@ -96,16 +98,17 @@
     position: relative;
     padding: 8px;
     font-family: 'Graphik', 'AGaramond', 'Lyon';
-    max-width: 1200px;
   }
 
   .title {
     text-align: center;
+    height: 0px;
   }
 
   input {
-    border: 1px gray;
-    border-radius: 13px;
+    border-radius: 7px;
+    height: 35px;
+    text-align: center;
   }
 
   :global(div.codex-editor__redactor) {
