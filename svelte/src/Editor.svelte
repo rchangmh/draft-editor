@@ -1,19 +1,27 @@
 <script>
-  
-  import EditorJS from '@editorjs/editorjs' 
-
-  import { wordCount, dark, fontSize } from './store.js'
+  import { onMount } from 'svelte'
+  import { wordCount, dark, fontSize, width } from './store.js'
+  import SvelteTooltip from 'svelte-tooltip'
   export let editorName
 
-  function handleKeydown (e) {
-    if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 's') {
-      e.preventDefault()
-      let d = new Date()
-      let date_key = `${editorName} ${d.getMonth()}/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
-      let text = document.getElementById(editorName).innerText
-      localStorage.setItem(date_key, text)
-    }
-    // localStorage.setItem()
+  onMount(() => {
+    updateWordCount(document.getElementById(editorName).innerText)
+  })
+
+  let innerHtml = localStorage.getItem(`${editorName}Html`) || ''
+  $: localStorage.setItem(`${editorName}Html`, innerHtml)
+
+  // let width = localStorage.getItem(`width`) || ''
+  // $: localStorage.setItem(`width`, width)
+
+  function updateWordCount(innerText) {
+    let count = 0
+    innerText.split('\n').forEach(p => {
+      if (p != '') {
+        count += p.split(' ').length
+      }
+    })
+    wordCount.update(() => (wordCount[editorName] = count))
   }
 
   // Title
@@ -26,24 +34,75 @@
   $: localStorage.setItem(`${editorName}Font`, fontFamily)
   let fonts = ['AGaramond', 'Lyon', 'Garamond', 'Graphik', 'Consolas']
 
-  // Editor
-  const editor = new EditorJS({ 
-    holder: editorName, 
-    logLevel: 'ERROR',
-    data: JSON.parse(localStorage.getItem(`${editorName}SavedText`)) || {},
-    onReady: () => handleSave()
-  })
+  function isLink() {
+    if (window.getSelection().toString !== '') {
+      const selection = window.getSelection().getRangeAt(0)
+      if (selection) {
+        if (selection.startContainer.parentNode.tagName === 'A' || selection.endContainer.parentNode.tagName === 'A') {
+          return [true, selection]
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
+    }
+  }
 
-  function handleSave() {
-    editor.save().then(output => {
-      let count = 0
-      output.blocks.forEach(block => {
-        let text = block.data.text
-        count += text.split(" ").length
-      })
-      wordCount.update(() => wordCount[editorName] = count)
-      localStorage.setItem(`${editorName}SavedText`, JSON.stringify(output))
-    })
+  function convertToPlain(html) {
+    var tempDivElement = document.createElement('div')
+    tempDivElement.innerHTML = html
+    return tempDivElement.textContent || tempDivElement.innerText || ''
+  }
+
+  function save() {
+    let d = new Date()
+    let mm = `${d.getMonth()}`.padStart(2, '0')
+    let dd = `${d.getDate()}`.padStart(2, '0')
+    let yyyy = d.getFullYear()
+    let hr = `${d.getHours()}`.padStart(2, '0')
+    let min = `${d.getMinutes()}`.padStart(2, '0')
+    let sec = `${d.getSeconds()}`.padStart(2, '0')
+    let date_key = `autosave_${editorName} ${mm}/${dd}/${yyyy} ${hr}:${min}:${sec}`
+    localStorage.setItem(date_key, innerHtml)
+    navigator.clipboard.writeText(convertToPlain(innerHtml))
+    // let focusNode = window.getSelection().focusNode
+    // if (focusNode.parentElement.id == editorName) {
+    //   localStorage.setItem(date_key, innerHtml)
+    // }
+  }
+
+  function handleKeydown(e) {
+    if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.key == 'k') {
+      e.preventDefault()
+      if (!isLink()) {
+        document.execCommand('CreateLink', false, window.prompt('URL: '))
+      } else {
+        document.execCommand('unlink', false)
+      }
+    }
+    // else if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 's') {
+    //   e.preventDefault()
+    //   handleCopy()
+    // }
+  }
+
+  function handleCopy() {
+    save()
+    innerHtml = replaceAll(innerHtml, [
+      ['--', '—'],
+      [' "', ' “'],
+      ['" ', '” '],
+      ["'", '’'],
+    ])
+    function listener(e) {
+      e.clipboardData.setData('text/html', innerHtml)
+      e.clipboardData.setData('text/plain', window.getSelection().focusNode)
+      e.preventDefault()
+    }
+    document.addEventListener('copy', listener)
+    document.execCommand('copy')
+    document.removeEventListener('copy', listener)
   }
 
   function replaceAll(str, findReplaceList) {
@@ -52,108 +111,68 @@
     })
     return str
   }
-
-  function rerender() {
-    let savedBlocks = JSON.parse(localStorage.getItem(`${editorName}SavedText`)).blocks
-    editor.save().then(output => {
-      output.blocks.forEach(block => {
-        block.data.text = replaceAll(block.data.text, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
-      })
-    editor.render({ blocks: output.blocks })
-    localStorage.setItem(`${editorName}SavedText`, JSON.stringify(output))
-    })
-  }
-
-  function handleCopy() {
-    let paragraphs = Array.from(document.getElementById(editorName).querySelectorAll('.ce-paragraph'))
-    let html = []
-    let text = []
-    paragraphs.forEach(paragraph => {
-      let paragraphHtml = replaceAll(paragraph.innerHTML, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
-      html += [`<p>${paragraphHtml}</p>`]
-      let paragraphText = replaceAll(paragraph.innerText, [['--', '—'], [' "', ' “'], ['" ', '” '], ['\'', '’']])
-      text += [paragraphText]
-    })
-    copyToClip(html, text)
-    rerender()
-  }
-
-  function copyToClip(html, text) {
-    function listener(e) {
-      e.clipboardData.setData("text/html", html)
-      e.clipboardData.setData("text/plain", text)
-      e.preventDefault()
-    }
-    document.addEventListener("copy", listener)
-    document.execCommand("copy")
-    document.removeEventListener("copy", listener)
-  }
-
 </script>
 
-
-<svelte:window 
-  on:copy={handleSave}
-  on:paste={handleSave}
-  on:keydown={e => handleKeydown(e)}
-/>
+<svelte:window on:keydown={handleKeydown} />
 
 <div>
-
   <!-- Header -->
-  <div class='header {$dark ? 'dark-mode' : ''}'>
+  <div class="header {$dark ? 'dark-mode' : ''}">
+    <div class="header-left">
+      {#if editTitleToggle}
+        <input
+          class="header-input"
+          bind:value={title}
+          on:focusout={() => (editTitleToggle = !editTitleToggle)}
+          autofocus
+        />
+      {:else}
+        <h1 on:click={() => (editTitleToggle = !editTitleToggle)}>
+          {title.trim() || `[${editorName.toLowerCase()}]`}
+        </h1>
+      {/if}
+      <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
+    </div>
 
-    <div class=header-left>
-    {#if editTitleToggle}
-      <input 
-        bind:value={title}
-        on:focusout={() => editTitleToggle = !editTitleToggle}
-        autofocus
-      />
-    {:else}
-      <h1 
-        on:click={() => editTitleToggle = !editTitleToggle}>
-        {title.trim() || `[${editorName.toLowerCase()}]`}
-      </h1>
-    {/if}
-    <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
-  </div>
-    
-    <div class=header-right>
-      <button 
-        class="duck {$dark ? 'dark-mode' : ''}" 
-        on:click={handleCopy}>
-        📋
-      </button>
-      <label for="font"></label>
-      <select 
-        bind:value={fontFamily}
-        style='font-family: {fontFamily}'
-        class:dark-mode={$dark}>
+    <div class="header-right">
+      <SvelteTooltip tip="Copy & Save" bottom color={$dark ? '#71318d' : '#f7e5ff'}>
+        <button class="duck {$dark ? 'dark-mode' : ''}" on:click={save}> 💾 & 📋 </button>
+      </SvelteTooltip>
+
+      <label for="font" />
+      <select bind:value={fontFamily} style="font-family: {fontFamily}" class:dark-mode={$dark}>
         {#each fonts as font}
-          <option value='{font}' style='font-family: {font}'>{font}</option>
+          <option value={font} style="font-family: {font}">{font}</option>
         {/each}
       </select>
-    
     </div>
   </div>
 
   <!-- Editor -->
-  <div 
-    class=editor 
-    id={editorName}
-    on:keyup={handleSave} 
-    style="font-size: {$fontSize*2}px; font-family: {fontFamily}"
-  />
 
+  <div
+    id={editorName}
+    class="editor"
+    style="font-size: {$fontSize * 2}px; font-family: {fontFamily}; width: {$width}px;"
+    contenteditable="true"
+    bind:innerHTML={innerHtml}
+    on:input={e => updateWordCount(e.target.textContent)}
+  />
 </div>
 
-
 <style>
+  :global(::selection) {
+    background-color: rgba(217, 245, 255, 0.5);
+  }
 
   .editor {
-    padding: 10px;
+    padding-top: 30px;
+    padding-bottom: 100px;
     margin: 0 auto;
+    width: 750px;
+    outline: none;
+    line-height: 1.6;
+    text-indent: 0;
   }
 
   .header {
@@ -164,12 +183,15 @@
     justify-content: space-between;
   }
 
-  .header-left, .header-right {
-    display:flex;
+  .header-left,
+  .header-right {
+    display: flex;
     align-items: center;
   }
 
-  input, button, select {
+  .header-input,
+  button,
+  select {
     margin: 3px;
     padding: 8px;
     border: 1px solid gray;
@@ -185,28 +207,40 @@
     width: 135px;
   }
 
-  button, select {
+  button,
+  select {
     cursor: pointer;
     outline: none;
   }
 
   button:active {
-    background: #F7E5FF !important;
+    background: #f7e5ff !important;
   }
 
-  button:focus, select:focus {
-    background: #FCF0FF;
+  button:focus,
+  select:focus {
+    background: #fcf0ff;
+  }
+
+  button:hover {
+    background: #f7e5ff;
   }
 
   .dark-mode button:active {
-    background: #71318D !important;
+    background: #71318d !important;
   }
 
-  .dark-mode button:focus, .dark-mode select:focus {
-    background: #57236E;
+  .dark-mode button:hover {
+    background: #71318d !important;
   }
 
-  input, h1 {
+  .dark-mode button:focus,
+  .dark-mode select:focus {
+    background: #57236e;
+  }
+
+  .header-input,
+  h1 {
     font-family: inherit;
     font-size: 28px;
     font-weight: bold;
@@ -215,5 +249,4 @@
   .dark-mode.header {
     border-bottom: 1px solid white;
   }
-
 </style>

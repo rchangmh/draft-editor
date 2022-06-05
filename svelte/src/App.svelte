@@ -1,12 +1,10 @@
 <script>
-  // import Editor from './Editor.svelte'
-  import MyEditor from './MyEditor.svelte'
-  import Heart from './Heart.svelte'
-  import { onMount } from 'svelte'
-  import { fade, fly } from 'svelte/transition'
+  import Editor from './Editor.svelte'
+  import { fly } from 'svelte/transition'
   import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
+  import SvelteTooltip from 'svelte-tooltip'
 
-  let menu = false
+  let menu = true
 
   let title = localStorage.getItem(`Title`) || 'Draft'
   $: localStorage.setItem(`Title`, title)
@@ -58,22 +56,41 @@
   <button style="position: fixed; bottom: 16px; left: 16px;" on:click={() => (menu = !menu)}> 🦆 </button>
 
   {#if menu}
-    <div class="menu" in:fly={{ x: -200, duration: 350 }} out:fade>
-      <button on:click={() => ($fontSize += 1)}> ➕ </button>
-      <button on:click={() => ($fontSize -= 1)}> ➖ </button>
-      <button on:click={() => ($width += 25)}> ◀▶ </button>
-      <button on:click={() => ($width -= 25)}> ▶◀ </button>
-      <button on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
-        {$dark ? '🌞' : '🌙'}
-      </button>
+    <div class="menu" in:fly={{ y: 20, duration: 350 }} out:fly={{ y: 20, duration: 350 }}>
+      <SvelteTooltip tip="User Guide" right color="#c4f1d4">
+        <button
+          ><a
+            href="https://rchangmh.notion.site/Draft-User-Guide-b684384749844803a4e11b298a74c7a9"
+            target="_blank"
+            style="text-decoration: none">📗</a
+          ></button
+        >
+      </SvelteTooltip>
+      <SvelteTooltip tip="Increase Font Size" right color="#c4f1d4">
+        <button on:click={() => ($fontSize += 1)}> ➕ </button>
+      </SvelteTooltip>
+      <SvelteTooltip tip="Decrease Font Size" right color="#c4f1d4">
+        <button on:click={() => ($fontSize -= 1)}> ➖ </button>
+      </SvelteTooltip>
+      <SvelteTooltip tip="Expand Text" right color="#c4f1d4">
+        <button on:click={() => ($width += 25)}> ◀▶ </button>
+      </SvelteTooltip>
+      <SvelteTooltip tip="Narrow Text" right color="#c4f1d4">
+        <button on:click={() => ($width -= 25)}> ▶◀ </button>
+      </SvelteTooltip>
+      <SvelteTooltip tip="Dark/Light Mode" right color="#c4f1d4">
+        <button on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
+          {$dark ? '🌞' : '🌙'}
+        </button>
+      </SvelteTooltip>
     </div>
   {/if}
 
   <!-- Editor  -->
 
   <div class="editor {$dark ? 'dark-mode' : ''}">
-    <MyEditor editorName="Written" />
-    <MyEditor editorName="Unwritten" />
+    <Editor editorName="Written" />
+    <Editor editorName="Unwritten" />
   </div>
 
   <!-- Progress  -->
@@ -84,7 +101,7 @@
     <br />
     {#if $percent == 100 && $wordCountWritten > 100}
       <div style="position:fixed; bottom: 111px;">
-        <Heart />
+        <Confetti />
       </div>
     {/if}
   </div>
@@ -92,6 +109,7 @@
 
 <style>
   /* Global & Editors */
+
   body {
     width: 88%;
     margin: 0 auto;
@@ -144,7 +162,7 @@
   .menu {
     bottom: 80px;
     left: 16px;
-    overflow: hidden;
+    overflow: visible;
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -171,7 +189,7 @@
     z-index: 3;
   }
 
-  button:focus {
+  button:hover {
     background: #f7e5ff;
   }
 
