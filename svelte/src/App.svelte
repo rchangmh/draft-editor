@@ -53,7 +53,11 @@
   </div>
 
   <!-- Menu  -->
-  <button style="position: fixed; bottom: 16px; left: 16px;" on:click={() => (menu = !menu)}> 🦆 </button>
+  <div class="menu-button">
+    <SvelteTooltip tip="Menu" right color="#c4f1d4">
+      <button on:click={() => (menu = !menu)}> 🦆 </button>
+    </SvelteTooltip>
+  </div>
 
   {#if menu}
     <div class="menu" in:fly={{ y: 20, duration: 350 }} out:fly={{ y: 20, duration: 350 }}>
@@ -100,9 +104,9 @@
     <progress value={$percent} style="width: 100%" max="100" />
     <br />
     {#if $percent == 100 && $wordCountWritten > 100}
-      <div style="position:fixed; bottom: 111px;">
+      <!-- <div style="position:fixed; bottom: 111px;">
         <Confetti />
-      </div>
+      </div> -->
     {/if}
   </div>
 </body>
@@ -172,6 +176,12 @@
     width: auto;
     border-radius: 15px;
     z-index: 3;
+  }
+
+  .menu-button {
+    bottom: 16px;
+    left: 16px;
+    position: fixed;
   }
 
   button {
