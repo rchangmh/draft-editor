@@ -4,7 +4,7 @@
   import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
   import SvelteTooltip from 'svelte-tooltip'
 
-  let menu = true
+  let menu = false
 
   let title = localStorage.getItem(`Title`) || 'Draft'
   $: localStorage.setItem(`Title`, title)
