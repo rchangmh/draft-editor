@@ -11,3 +11,10 @@ const draftStack = new StaticStack(app, 'draftStack', {
   subdomainName: 'draft',
   zoneName: 'cdk.link',
 })
+
+const betaDraftStack = new StaticStack(app, 'betaDraftStack', {
+  staticAssetsPath: path.join(__dirname, '..', '..', 'svelte', 'public'),
+  hostedZoneId: 'Z03304211EX845FJI16N9',
+  subdomainName: 'beta.draft',
+  zoneName: 'cdk.link',
+})

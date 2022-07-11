@@ -3,6 +3,7 @@
   import { fly } from 'svelte/transition'
   import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
   import SvelteTooltip from 'svelte-tooltip'
+  import { Confetti } from 'svelte-confetti'
 
   let menu = false
 
@@ -103,10 +104,33 @@
     <h2 style="margin: 8px; font-size: 22px;">{$percent}%</h2>
     <progress value={$percent} style="width: 100%" max="100" />
     <br />
-    {#if $percent == 100 && $wordCountWritten > 100}
-      <!-- <div style="position:fixed; bottom: 111px;">
-        <Confetti />
-      </div> -->
+    {#if $percent == 100 && $wordCountWritten > 200}
+      <div
+        style="
+position: fixed;
+top: -100px;
+left: 0;
+height: 150vh;
+width: 120vw;
+display: flex;
+justify-content: center;
+overflow: hidden;
+pointer-events: none;"
+      >
+        <Confetti
+          size="85"
+          rounded
+          x={[-5, 5]}
+          y={[0, 0.1]}
+          delay={[0, 2000]}
+          infinite
+          duration="5000"
+          amount="40"
+          fallDistance="100vh"
+          colorArray={['url(/ace.jpg)']}
+        />
+      </div>
+      <Confetti size="10" infinite amount="40" />
     {/if}
   </div>
 </body>
@@ -221,7 +245,7 @@
 
   .dark-mode.progress {
     background: #373737;
-    border: solid yellow 1px;
+    border: solid white 1px;
     color: #f6f6f6;
   }
 </style>

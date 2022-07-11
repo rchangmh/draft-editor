@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "sirv-cli": "^2.0.0",
+    "svelte-confetti": "^1.2.0",
     "svelte-tooltip": "^1.2.0"
   }
 }
