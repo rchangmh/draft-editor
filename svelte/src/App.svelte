@@ -110,8 +110,8 @@
 position: fixed;
 top: -100px;
 left: 0;
-height: 150vh;
-width: 120vw;
+height: 100vh;
+width: 100vw;
 display: flex;
 justify-content: center;
 overflow: hidden;
@@ -125,12 +125,12 @@ pointer-events: none;"
           delay={[0, 2000]}
           infinite
           duration="5000"
-          amount="40"
+          amount="42"
           fallDistance="100vh"
           colorArray={['url(/ace.jpg)']}
         />
       </div>
-      <Confetti size="10" infinite amount="40" />
+      <Confetti size="15" infinite amount="40" />
     {/if}
   </div>
 </body>
