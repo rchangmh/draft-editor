@@ -1,7 +1,7 @@
 <script>
   import Editor from './Editor.svelte'
   import { fly, fade } from 'svelte/transition'
-  import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
+  import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width, siteFont } from './store.js'
   import SvelteTooltip from 'svelte-tooltip'
   import { Confetti } from 'svelte-confetti'
 
@@ -48,9 +48,9 @@
   <div class="title {$dark ? 'dark-mode' : ''}">
     <title>{title}</title>
     {#if editTitle}
-      <h2><input bind:value={title} on:focusout={() => (editTitle = !editTitle)} autofocus /></h2>
+      <h2 style="font-family: {$siteFont}"><input bind:value={title} on:focusout={() => (editTitle = !editTitle)} autofocus /></h2>
     {:else}
-      <h2 on:click={() => (editTitle = !editTitle)}>{title}</h2>
+      <h2 style="font-family: {$siteFont};" on:click={() => (editTitle = !editTitle)}>{title}</h2>
     {/if}
   </div>
 
@@ -101,7 +101,8 @@
 
   <!-- Progress  -->
   {#if showProgress}
-    <div 
+    <div
+      style="font-family: {$siteFont}"
       class="progress {$dark ? 'dark-mode' : ''}"
       on:click={() => (showProgress = !showProgress)}
       in:fly={{ y: 20, delay: 250, duration: 350 }} out:fly={{ y: 20, duration: 350 }}
@@ -160,18 +161,24 @@ pointer-events: none;"
     margin: 0 auto;
     position: relative;
     padding: 8px;
-    font-family: 'Graphik', 'AGaramond', 'Lyon';
+    font-family: 'Roboto';
   }
 
   .title {
     text-align: center;
-    height: 0px;
+    height: 20px;
+    font-size: 30px;
+  }
+  
+  .title h2 {
+    font-weight: normal;
   }
 
-  input {
-    border-radius: 7px;
-    height: 35px;
+  .title input {
+    border: none;
+    outline: none;
     text-align: center;
+    height: 50px;
   }
 
   :global(div.codex-editor__redactor) {
@@ -201,6 +208,26 @@ pointer-events: none;"
   @font-face {
     font-family: 'Noe';
     src: url('/fonts/Noe-Text-Black.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Argentina';
+    src: url('/fonts/Argentina-Script.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Overpass';
+    src: url('/fonts/Overpass.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Overpass Mono';
+    src: url('/fonts/OverpassMono.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Roboto';
+    src: url('/fonts/Roboto.woff2') format('woff2');
   }
 
   /* Menu */
@@ -262,12 +289,13 @@ pointer-events: none;"
     bottom: 20px;
     right: 20px;
     padding: 20px;
-    border: solid black 1px;
-    border-radius: 4px;
+    border: solid 1px;
+    border-radius: 9px;
     justify-content: center;
     align-content: center;
     text-align: center;
     width: 100px;
+    height: 75px;
     z-index: 3;
   }
 

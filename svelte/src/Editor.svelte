@@ -32,7 +32,15 @@
   // Font
   let fontFamily = localStorage.getItem(`${editorName}Font`) || 'AGaramond'
   $: localStorage.setItem(`${editorName}Font`, fontFamily)
-  let fonts = ['AGaramond', 'Lyon', 'Garamond', 'Graphik', 'Consolas']
+  let fonts = [
+    'AGaramond',
+    'Garamond',
+    'Graphik',
+    'Lyon',
+    'Overpass Mono',
+    'Overpass',
+    'Roboto',
+  ]
 
   function isLink() {
     if (window.getSelection().toString !== '') {
@@ -127,11 +135,11 @@
           autofocus
         />
       {:else}
-        <h1 on:click={() => (editTitleToggle = !editTitleToggle)}>
+        <h1 style="font-family: {fontFamily}" on:click={() => (editTitleToggle = !editTitleToggle)}>
           {title.trim() || `[${editorName.toLowerCase()}]`}
         </h1>
       {/if}
-      <h1 style="white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
+      <h1 style="font-family: {fontFamily} white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
     </div>
 
     <div class="header-right">
@@ -197,14 +205,11 @@
     border: 1px solid gray;
     border-radius: 2px;
     background: inherit;
-    font-size: 18px;
+    font-size: 16px;
     height: 40px;
     align-items: center;
     justify-content: space-between;
-  }
-
-  select {
-    width: 135px;
+    outline: none;
   }
 
   button,
@@ -243,7 +248,7 @@
   h1 {
     font-family: inherit;
     font-size: 28px;
-    font-weight: bold;
+    font-weight: normal;
   }
 
   .dark-mode.header {

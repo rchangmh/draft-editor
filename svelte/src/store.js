@@ -22,3 +22,6 @@ export const wordCountUnwritten = derived(wordCount, $wordCount => {
   let sum = wordCount['Unwritten'] + wordCount['Written']
   return isNaN(sum) ? 0 : sum
 })
+
+export const siteFont = writable(localStorage.getItem('WrittenFont'))
+siteFont.subscribe(val => localStorage.setItem('WrittenFont', val))

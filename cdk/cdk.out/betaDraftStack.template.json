@@ -132,7 +132,7 @@
      }
     ],
     "SourceObjectKeys": [
-     "c79645596e5f80fc2517bb4642b6f0a7811540a0ed4d65077917e8e2d9195dcd.zip"
+     "b73b827b844c285d5c9bea1729d1cf6fca0a0f08de8996fadd1f6a6ffaa0ab9c.zip"
     ],
     "DestinationBucketName": {
      "Ref": "bucket43879C71"
