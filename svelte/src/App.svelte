@@ -1,6 +1,6 @@
 <script>
   import Editor from './Editor.svelte'
-  import { fly } from 'svelte/transition'
+  import { fly, fade } from 'svelte/transition'
   import { wordCount, percent, wordCountWritten, wordCountUnwritten, dark, fontSize, width } from './store.js'
   import SvelteTooltip from 'svelte-tooltip'
   import { Confetti } from 'svelte-confetti'
@@ -9,7 +9,8 @@
 
   let title = localStorage.getItem(`Title`) || 'Draft'
   $: localStorage.setItem(`Title`, title)
-  let editTitleToggle = false
+  let editTitle = false
+  let showProgress = true
 
   // Dark Mode
   $: document.documentElement.setAttribute('class', $dark ? 'dark-mode' : '')
@@ -46,24 +47,24 @@
   <!-- Title  -->
   <div class="title {$dark ? 'dark-mode' : ''}">
     <title>{title}</title>
-    {#if editTitleToggle}
-      <h2><input bind:value={title} on:focusout={() => (editTitleToggle = !editTitleToggle)} autofocus /></h2>
+    {#if editTitle}
+      <h2><input bind:value={title} on:focusout={() => (editTitle = !editTitle)} autofocus /></h2>
     {:else}
-      <h2 on:click={() => (editTitleToggle = !editTitleToggle)}>{title}</h2>
+      <h2 on:click={() => (editTitle = !editTitle)}>{title}</h2>
     {/if}
   </div>
 
   <!-- Menu  -->
   <div class="menu-button">
     <SvelteTooltip tip="Menu" right color="#c4f1d4">
-      <button on:click={() => (menu = !menu)}> 🦆 </button>
+      <button class="{$dark ? 'dark-mode' : ''}" on:click={() => (menu = !menu)}> 🦆 </button>
     </SvelteTooltip>
   </div>
 
   {#if menu}
     <div class="menu" in:fly={{ y: 20, duration: 350 }} out:fly={{ y: 20, duration: 350 }}>
       <SvelteTooltip tip="User Guide" right color="#c4f1d4">
-        <button
+        <button class="{$dark ? 'dark-mode' : ''}"
           ><a
             href="https://rchangmh.notion.site/Draft-User-Guide-b684384749844803a4e11b298a74c7a9"
             target="_blank"
@@ -72,19 +73,19 @@
         >
       </SvelteTooltip>
       <SvelteTooltip tip="Increase Font Size" right color="#c4f1d4">
-        <button on:click={() => ($fontSize += 1)}> ➕ </button>
+        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($fontSize += 1)}> ➕ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Decrease Font Size" right color="#c4f1d4">
-        <button on:click={() => ($fontSize -= 1)}> ➖ </button>
+        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($fontSize -= 1)}> ➖ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Expand Text" right color="#c4f1d4">
-        <button on:click={() => ($width += 25)}> ◀▶ </button>
+        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($width += 25)}> ◀▶ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Narrow Text" right color="#c4f1d4">
-        <button on:click={() => ($width -= 25)}> ▶◀ </button>
+        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($width -= 25)}> ▶◀ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Dark/Light Mode" right color="#c4f1d4">
-        <button on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
+        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
           {$dark ? '🌞' : '🌙'}
         </button>
       </SvelteTooltip>
@@ -99,14 +100,19 @@
   </div>
 
   <!-- Progress  -->
-  <div class="progress {$dark ? 'dark-mode' : ''}">
-    {$wordCountWritten} / {$wordCountUnwritten > -1 ? $wordCountUnwritten : '?'}
-    <h2 style="margin: 8px; font-size: 22px;">{$percent}%</h2>
-    <progress value={$percent} style="width: 100%" max="100" />
-    <br />
-    {#if $percent == 100 && $wordCountWritten > 200}
-      <div
-        style="
+  {#if showProgress}
+    <div 
+      class="progress {$dark ? 'dark-mode' : ''}"
+      on:click={() => (showProgress = !showProgress)}
+      in:fly={{ y: 20, delay: 250, duration: 350 }} out:fly={{ y: 20, duration: 350 }}
+    >
+      {$wordCountWritten} / {$wordCountUnwritten > -1 ? $wordCountUnwritten : '?'}
+      <h2 style="margin: 8px; font-size: 22px;">{$percent}%</h2>
+      <progress value={$percent} style="width: 100%" max="100" />
+      <br />
+      {#if $percent == 100 && $wordCountWritten > 200}
+        <div
+          style="
 position: fixed;
 top: -100px;
 left: 0;
@@ -116,23 +122,34 @@ display: flex;
 justify-content: center;
 overflow: hidden;
 pointer-events: none;"
-      >
-        <Confetti
-          size="85"
-          rounded
-          x={[-5, 5]}
-          y={[0, 0.1]}
-          delay={[0, 2000]}
-          infinite
-          duration="5000"
-          amount="42"
-          fallDistance="100vh"
-          colorArray={['url(/ace.jpg)']}
-        />
-      </div>
-      <Confetti size="15" infinite amount="40" />
-    {/if}
-  </div>
+        >
+          <Confetti
+            size="85"
+            rounded
+            x={[-5, 5]}
+            y={[0, 0.1]}
+            delay={[0, 2000]}
+            infinite
+            duration="5000"
+            amount="42"
+            fallDistance="100vh"
+            colorArray={['url(/ace.jpg)']}
+          />
+        </div>
+        <Confetti size="15" infinite amount="40" />
+      {/if}
+    </div>
+  {:else}
+    <div class="progress-button">
+      <button 
+        class="{$dark ? 'dark-mode' : ''}"
+        on:click={() => (showProgress = !showProgress)}
+        in:fade={{ y: 20, delay: 250, duration: 250 }} out:fade={{ y: 20, duration: 50 }}
+      > 🫥 </button>
+    </div>
+    
+  {/if}
+
 </body>
 
 <style>
@@ -208,6 +225,12 @@ pointer-events: none;"
     position: fixed;
   }
 
+  .progress-button {
+    bottom: 16px;
+    right: 16px;
+    position: fixed;
+  }
+
   button {
     background: white;
     border: 1px solid gray;
@@ -223,18 +246,23 @@ pointer-events: none;"
     z-index: 3;
   }
 
+  button.dark-mode {
+    background: #7e6e83;
+  }
+
   button:hover {
     background: #f7e5ff;
   }
 
   /* Progress */
   .progress {
-    background: white;
+    background: none;
+    background-color: hsla(0, 0%, 100%, 0.5);
     position: fixed;
     bottom: 20px;
     right: 20px;
     padding: 20px;
-    border: solid purple 1px;
+    border: solid black 1px;
     border-radius: 4px;
     justify-content: center;
     align-content: center;
@@ -244,7 +272,7 @@ pointer-events: none;"
   }
 
   .dark-mode.progress {
-    background: #373737;
+    background-color: hsla(0, 0%, 16%, 0.5);
     border: solid white 1px;
     color: #f6f6f6;
   }

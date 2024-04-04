@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "deploy": "cd svelte && npm run build && cd ../cdk && cdk deploy --profile personal"
+    "synth": "cd cdk && cdk synth",
+    "dev": "cd svelte && npm run dev",
+    "build": "cd svelte && npm run build && cd ../cdk && cdk synth",
+    "deploy:beta": "cd svelte && npm run build && cd ../cdk && cdk deploy betaDraftStack --profile personal",
+    "deploy:prod": "cd svelte && npm run build && cd ../cdk && cdk deploy draftStack --profile personal"
   },
   "repository": {
     "type": "git",
