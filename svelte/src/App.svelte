@@ -299,6 +299,11 @@ pointer-events: none;"
     z-index: 3;
   }
 
+  .progress:hover {
+    cursor: pointer;
+    opacity: .35;
+  }
+
   .dark-mode.progress {
     background-color: hsla(0, 0%, 16%, 0.5);
     border: solid white 1px;
