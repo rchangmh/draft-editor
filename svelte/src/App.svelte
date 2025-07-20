@@ -5,29 +5,38 @@
   import SvelteTooltip from 'svelte-tooltip'
   import { Confetti } from 'svelte-confetti'
 
-  let menu = false
+  let menu = $state(false)
 
-  let title = localStorage.getItem(`Title`) || 'Draft'
-  $: localStorage.setItem(`Title`, title)
-  let editTitle = false
-  let showProgress = true
+  let title = $state(localStorage.getItem(`Title`) || 'Draft')
+  $effect(() => {
+    localStorage.setItem(`Title`, title)
+  })
+  
+  let editTitle = $state(false)
+  let showProgress = $state(true)
 
-  // Dark Mode
-  $: document.documentElement.setAttribute('class', $dark ? 'dark-mode' : '')
+  // Dark Mode - use $effect instead of reactive statement
+  $effect(() => {
+    document.documentElement.setAttribute('class', dark.value ? 'dark-mode' : '')
+  })
 
-  // Keep width within range.
-  $: if ($width > 1200) {
-    $width -= 25
-  } else if ($width < 500) {
-    $width += 25
-  }
+  // Keep width within range - use $effect instead of reactive statements
+  $effect(() => {
+    if (width.value > 1200) {
+      width.value -= 25
+    } else if (width.value < 500) {
+      width.value += 25
+    }
+  })
 
-  // Keep font within range.
-  $: if ($fontSize > 30) {
-    $fontSize -= 1
-  } else if ($fontSize < 1) {
-    $fontSize += 1
-  }
+  // Keep font within range - use $effect instead of reactive statements  
+  $effect(() => {
+    if (fontSize.value > 30) {
+      fontSize.value -= 1
+    } else if (fontSize.value < 1) {
+      fontSize.value += 1
+    }
+  })
 
   function clear() {
     function listener(e) {
@@ -45,26 +54,26 @@
 
 <body>
   <!-- Title  -->
-  <div class="title {$dark ? 'dark-mode' : ''}">
+  <div class="title {dark.value ? 'dark-mode' : ''}">
     <title>{title}</title>
     {#if editTitle}
-      <h2 style="font-family: {$siteFont}"><input bind:value={title} on:focusout={() => (editTitle = !editTitle)} autofocus /></h2>
+      <h2 style="font-family: {siteFont.value}"><input bind:value={title} onfocusout={() => (editTitle = !editTitle)} autofocus /></h2>
     {:else}
-      <h2 style="font-family: {$siteFont};" on:click={() => (editTitle = !editTitle)}>{title}</h2>
+      <h2 style="font-family: {siteFont.value};" onclick={() => (editTitle = !editTitle)}>{title}</h2>
     {/if}
   </div>
 
   <!-- Menu  -->
   <div class="menu-button">
     <SvelteTooltip tip="Menu" right color="#c4f1d4">
-      <button class="{$dark ? 'dark-mode' : ''}" on:click={() => (menu = !menu)}> 🦆 </button>
+      <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (menu = !menu)}> 🦆 </button>
     </SvelteTooltip>
   </div>
 
   {#if menu}
     <div class="menu" in:fly={{ y: 20, duration: 350 }} out:fly={{ y: 20, duration: 350 }}>
       <SvelteTooltip tip="User Guide" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}"
+        <button class="{dark.value ? 'dark-mode' : ''}"
           ><a
             href="https://rchangmh.notion.site/Draft-User-Guide-b684384749844803a4e11b298a74c7a9"
             target="_blank"
@@ -73,20 +82,20 @@
         >
       </SvelteTooltip>
       <SvelteTooltip tip="Increase Font Size" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($fontSize += 1)}> ➕ </button>
+        <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (fontSize.value += 1)}> ➕ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Decrease Font Size" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($fontSize -= 1)}> ➖ </button>
+        <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (fontSize.value -= 1)}> ➖ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Expand Text" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($width += 25)}> ◀▶ </button>
+        <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (width.value += 25)}> ◀▶ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Narrow Text" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($width -= 25)}> ▶◀ </button>
+        <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (width.value -= 25)}> ▶◀ </button>
       </SvelteTooltip>
       <SvelteTooltip tip="Dark/Light Mode" right color="#c4f1d4">
-        <button class="{$dark ? 'dark-mode' : ''}" on:click={() => ($dark ? ($dark = 0) : ($dark = 1))}>
-          {$dark ? '🌞' : '🌙'}
+        <button class="{dark.value ? 'dark-mode' : ''}" onclick={() => (dark.value ? (dark.value = 0) : (dark.value = 1))}>
+          {dark.value ? '🌞' : '🌙'}
         </button>
       </SvelteTooltip>
     </div>
@@ -94,7 +103,7 @@
 
   <!-- Editor  -->
 
-  <div class="editor {$dark ? 'dark-mode' : ''}">
+  <div class="editor {dark.value ? 'dark-mode' : ''}">
     <Editor editorName="Written" />
     <Editor editorName="Unwritten" />
   </div>
@@ -102,16 +111,16 @@
   <!-- Progress  -->
   {#if showProgress}
     <div
-      style="font-family: {$siteFont}"
-      class="progress {$dark ? 'dark-mode' : ''}"
-      on:click={() => (showProgress = !showProgress)}
+      style="font-family: {siteFont.value}"
+      class="progress {dark.value ? 'dark-mode' : ''}"
+      onclick={() => (showProgress = !showProgress)}
       in:fly={{ y: 20, delay: 250, duration: 350 }} out:fly={{ y: 20, duration: 350 }}
     >
-      {$wordCountWritten} / {$wordCountUnwritten > -1 ? $wordCountUnwritten : '?'}
-      <h2 style="margin: 8px; font-size: 22px;">{$percent}%</h2>
-      <progress value={$percent} style="width: 100%" max="100" />
+      {wordCountWritten} / {wordCountUnwritten > -1 ? wordCountUnwritten : '?'}
+      <h2 style="margin: 8px; font-size: 22px;">{percent}%</h2>
+      <progress value={percent} style="width: 100%" max="100" />
       <br />
-      {#if $percent == 100 && $wordCountWritten > 200}
+      {#if percent == 100 && wordCountWritten > 200}
         <div
           style="
 position: fixed;
@@ -143,8 +152,8 @@ pointer-events: none;"
   {:else}
     <div class="progress-button">
       <button 
-        class="{$dark ? 'dark-mode' : ''}"
-        on:click={() => (showProgress = !showProgress)}
+        class="{dark.value ? 'dark-mode' : ''}"
+        onclick={() => (showProgress = !showProgress)}
         in:fade={{ y: 20, delay: 250, duration: 250 }} out:fade={{ y: 20, duration: 50 }}
       > 🫥 </button>
     </div>

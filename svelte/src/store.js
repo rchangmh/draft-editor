@@ -1,27 +1,49 @@
-import { writable, derived } from 'svelte/store'
+import { $state, $derived, $effect } from 'svelte'
 
-export const dark = writable(parseInt(localStorage.getItem('dark')) || 0)
-dark.subscribe(val => localStorage.setItem('dark', val))
+// Helper function to persist state to localStorage
+function persistentState(key, initialValue) {
+  let value = $state(parseInt(localStorage.getItem(key)) || initialValue)
+  
+  $effect(() => {
+    localStorage.setItem(key, value.toString())
+  })
+  
+  return {
+    get value() { return value },
+    set value(v) { value = v }
+  }
+}
 
-export const fontSize = writable(parseInt(localStorage.getItem('fontSize')) || 13)
-fontSize.subscribe(val => localStorage.setItem('fontSize', val))
+export const dark = persistentState('dark', 0)
+export const fontSize = persistentState('fontSize', 13) 
+export const width = persistentState('width', 750)
 
-export const width = writable(parseInt(localStorage.getItem('width')) || 750)
-width.subscribe(val => localStorage.setItem('width', val))
+export let wordCount = $state({})
 
-export const wordCount = writable({})
-
-export const percent = derived(wordCount, $wordCount => {
+export const percent = $derived(() => {
   let num = Math.round((wordCount['Written'] / (wordCount['Unwritten'] + wordCount['Written'])) * 1000) / 10
   return isNaN(num) ? 0 : num
 })
 
-export const wordCountWritten = derived(wordCount, $wordCount => wordCount['Written'])
+export const wordCountWritten = $derived(() => wordCount['Written'])
 
-export const wordCountUnwritten = derived(wordCount, $wordCount => {
+export const wordCountUnwritten = $derived(() => {
   let sum = wordCount['Unwritten'] + wordCount['Written']
   return isNaN(sum) ? 0 : sum
 })
 
-export const siteFont = writable(localStorage.getItem('WrittenFont'))
-siteFont.subscribe(val => localStorage.setItem('WrittenFont', val))
+// String state for siteFont
+function persistentStringState(key, initialValue) {
+  let value = $state(localStorage.getItem(key) || initialValue)
+  
+  $effect(() => {
+    if (value) localStorage.setItem(key, value)
+  })
+  
+  return {
+    get value() { return value },
+    set value(v) { value = v }
+  }
+}
+
+export const siteFont = persistentStringState('WrittenFont', '')

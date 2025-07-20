@@ -2,17 +2,17 @@
   import { onMount } from 'svelte'
   import { wordCount, dark, fontSize, width } from './store.js'
   import SvelteTooltip from 'svelte-tooltip'
-  export let editorName
+  
+  let { editorName } = $props()
 
   onMount(() => {
     updateWordCount(document.getElementById(editorName).innerText)
   })
 
-  let innerHtml = localStorage.getItem(`${editorName}Html`) || ''
-  $: localStorage.setItem(`${editorName}Html`, innerHtml)
-
-  // let width = localStorage.getItem(`width`) || ''
-  // $: localStorage.setItem(`width`, width)
+  let innerHtml = $state(localStorage.getItem(`${editorName}Html`) || '')
+  $effect(() => {
+    localStorage.setItem(`${editorName}Html`, innerHtml)
+  })
 
   function updateWordCount(innerText) {
     let count = 0
@@ -25,13 +25,17 @@
   }
 
   // Title
-  let editTitleToggle = false
-  let title = localStorage.getItem(`${editorName}Title`) || ''
-  $: localStorage.setItem(`${editorName}Title`, title)
+  let editTitleToggle = $state(false)
+  let title = $state(localStorage.getItem(`${editorName}Title`) || '')
+  $effect(() => {
+    localStorage.setItem(`${editorName}Title`, title)
+  })
 
   // Font
-  let fontFamily = localStorage.getItem(`${editorName}Font`) || 'AGaramond'
-  $: localStorage.setItem(`${editorName}Font`, fontFamily)
+  let fontFamily = $state(localStorage.getItem(`${editorName}Font`) || 'AGaramond')
+  $effect(() => {
+    localStorage.setItem(`${editorName}Font`, fontFamily)
+  })
   let fonts = [
     'AGaramond',
     'Garamond',
@@ -74,10 +78,6 @@
     let date_key = `autosave_${editorName} ${mm}/${dd}/${yyyy} ${hr}:${min}:${sec}`
     localStorage.setItem(date_key, innerHtml)
     navigator.clipboard.writeText(convertToPlain(innerHtml))
-    // let focusNode = window.getSelection().focusNode
-    // if (focusNode.parentElement.id == editorName) {
-    //   localStorage.setItem(date_key, innerHtml)
-    // }
   }
 
   function handleKeydown(e) {
@@ -89,19 +89,15 @@
         document.execCommand('unlink', false)
       }
     }
-    // else if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 's') {
-    //   e.preventDefault()
-    //   handleCopy()
-    // }
   }
 
   function handleCopy() {
     save()
     innerHtml = replaceAll(innerHtml, [
       ['--', '—'],
-      [' "', ' “'],
-      ['" ', '” '],
-      ["'", '’'],
+      [' "', ' "'],
+      ['" ', '" '],
+      ["'", "'"],
     ])
     function listener(e) {
       e.clipboardData.setData('text/html', innerHtml)
@@ -121,21 +117,21 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div>
   <!-- Header -->
-  <div class="header {$dark ? 'dark-mode' : ''}">
+  <div class="header {dark.value ? 'dark-mode' : ''}">
     <div class="header-left">
       {#if editTitleToggle}
         <input
           class="header-input"
           bind:value={title}
-          on:focusout={() => (editTitleToggle = !editTitleToggle)}
+          onfocusout={() => (editTitleToggle = !editTitleToggle)}
           autofocus
         />
       {:else}
-        <h1 style="font-family: {fontFamily}" on:click={() => (editTitleToggle = !editTitleToggle)}>
+        <h1 style="font-family: {fontFamily}" onclick={() => (editTitleToggle = !editTitleToggle)}>
           {title.trim() || `[${editorName.toLowerCase()}]`}
         </h1>
       {/if}
@@ -143,12 +139,12 @@
     </div>
 
     <div class="header-right">
-      <SvelteTooltip tip="Copy & Save" bottom color={$dark ? '#71318d' : '#f7e5ff'}>
-        <button class="duck {$dark ? 'dark-mode' : ''}" on:click={save}> 💾 & 📋 </button>
+      <SvelteTooltip tip="Copy & Save" bottom color={dark.value ? '#71318d' : '#f7e5ff'}>
+        <button class="duck {dark.value ? 'dark-mode' : ''}" onclick={save}> 💾 & 📋 </button>
       </SvelteTooltip>
 
       <label for="font" />
-      <select bind:value={fontFamily} style="font-family: {fontFamily}" class:dark-mode={$dark}>
+      <select bind:value={fontFamily} style="font-family: {fontFamily}" class:dark-mode={dark.value}>
         {#each fonts as font}
           <option value={font} style="font-family: {font}">{font}</option>
         {/each}
@@ -161,10 +157,10 @@
   <div
     id={editorName}
     class="editor"
-    style="font-size: {$fontSize * 2}px; font-family: {fontFamily}; width: {$width}px;"
+    style="font-size: {fontSize.value * 2}px; font-family: {fontFamily}; width: {width.value}px;"
     contenteditable="true"
     bind:innerHTML={innerHtml}
-    on:input={e => updateWordCount(e.target.textContent)}
+    oninput={e => updateWordCount(e.target.textContent)}
   />
 </div>
 
