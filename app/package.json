@@ -19,5 +19,9 @@
 		"svelte-check": "^4.0.0",
 		"typescript": "^5.0.0",
 		"vite": "^7.0.4"
+	},
+	"dependencies": {
+		"svelte-confetti": "^2.3.2",
+		"svelte-tooltip": "^1.2.0"
 	}
 }
