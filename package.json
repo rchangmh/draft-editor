@@ -4,10 +4,10 @@
   "description": "",
   "scripts": {
     "synth": "cd cdk && cdk synth",
-    "dev": "cd svelte && npm run dev",
-    "build": "cd svelte && npm run build && cd ../cdk && cdk synth",
-    "deploy:beta": "cd svelte && npm run build && cd ../cdk && cdk deploy betaDraftStack --profile personal",
-    "deploy:prod": "cd svelte && npm run build && cd ../cdk && cdk deploy draftStack --profile personal"
+    "dev": "cd app && npm run dev",
+    "build": "cd app && npm run build && cd ../cdk && cdk synth",
+    "deploy:beta": "cd app && npm run build && cd ../cdk && cdk deploy betaDraftStack --profile personal",
+    "deploy:prod": "cd app && npm run build && cd ../cdk && cdk deploy draftStack --profile personal"
   },
   "repository": {
     "type": "git",

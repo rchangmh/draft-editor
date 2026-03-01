@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { wordCount, dark, fontSize, width } from './store.js'
-  import SvelteTooltip from 'svelte-tooltip'
+  import { wordCount, dark, fontSize, width } from '$lib/stores.js'
   export let editorName
 
   onMount(() => {
@@ -10,9 +9,6 @@
 
   let innerHtml = localStorage.getItem(`${editorName}Html`) || ''
   $: localStorage.setItem(`${editorName}Html`, innerHtml)
-
-  // let width = localStorage.getItem(`width`) || ''
-  // $: localStorage.setItem(`width`, width)
 
   function updateWordCount(innerText) {
     let count = 0
@@ -74,10 +70,6 @@
     let date_key = `autosave_${editorName} ${mm}/${dd}/${yyyy} ${hr}:${min}:${sec}`
     localStorage.setItem(date_key, innerHtml)
     navigator.clipboard.writeText(convertToPlain(innerHtml))
-    // let focusNode = window.getSelection().focusNode
-    // if (focusNode.parentElement.id == editorName) {
-    //   localStorage.setItem(date_key, innerHtml)
-    // }
   }
 
   function handleKeydown(e) {
@@ -89,19 +81,15 @@
         document.execCommand('unlink', false)
       }
     }
-    // else if ((window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) && e.key == 's') {
-    //   e.preventDefault()
-    //   handleCopy()
-    // }
   }
 
   function handleCopy() {
     save()
     innerHtml = replaceAll(innerHtml, [
       ['--', '—'],
-      [' "', ' “'],
-      ['" ', '” '],
-      ["'", '’'],
+      [' "', ' "'],
+      ['" ', '" '],
+      ["'", '\u2019'],
     ])
     function listener(e) {
       e.clipboardData.setData('text/html', innerHtml)
@@ -139,13 +127,11 @@
           {title.trim() || `[${editorName.toLowerCase()}]`}
         </h1>
       {/if}
-      <h1 style="font-family: {fontFamily} white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
+      <h1 style="font-family: {fontFamily}; white-space: nowrap;">&nbsp;— {wordCount[editorName] ? wordCount[editorName] : 0}&nbsp;</h1>
     </div>
 
     <div class="header-right">
-      <SvelteTooltip tip="Copy & Save" bottom color={$dark ? '#71318d' : '#f7e5ff'}>
-        <button class="duck {$dark ? 'dark-mode' : ''}" on:click={save}> 💾 & 📋 </button>
-      </SvelteTooltip>
+      <button class="duck {$dark ? 'dark-mode' : ''}" title="Copy & Save" on:click={save}>💾 & 📋</button>
 
       <label for="font" />
       <select bind:value={fontFamily} style="font-family: {fontFamily}" class:dark-mode={$dark}>

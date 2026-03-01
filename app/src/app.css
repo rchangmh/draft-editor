@@ -61,3 +61,43 @@ button:not(:disabled):active {
 button:focus {
 	border-color: #666;
 }
+
+@font-face {
+	font-family: 'AGaramond';
+	src: url('/fonts/AGaramondPro-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Graphik';
+	src: url('/fonts/Graphik-Regular-Web.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Lyon';
+	src: url('/fonts/Lyon-Text-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Noe';
+	src: url('/fonts/Noe-Text-Black.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Argentina';
+	src: url('/fonts/Argentina-Script.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Overpass';
+	src: url('/fonts/Overpass.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Overpass Mono';
+	src: url('/fonts/OverpassMono.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Roboto';
+	src: url('/fonts/Roboto.woff2') format('woff2');
+}
