@@ -1,22 +1,31 @@
 {
-  "name": "draft-editor",
-  "version": "1.0.0",
-  "description": "",
+  "name": "draft_cdk",
+  "version": "0.1.0",
+  "bin": {
+    "draft_cdk": "bin/draft_cdk.js"
+  },
   "scripts": {
-    "synth": "cd cdk && cdk synth",
-    "dev": "cd svelte && npm run dev",
-    "build": "cd svelte && npm run build && cd ../cdk && cdk synth",
-    "deploy:beta": "cd svelte && npm run build && cd ../cdk && cdk deploy betaDraftStack --profile personal",
-    "deploy:prod": "cd svelte && npm run build && cd ../cdk && cdk deploy draftStack --profile personal"
+    "build": "tsc && cd ./svelte-draft-editor && npm run build",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk synth --no-version-reporting && cdk diff --profile personal",
+    "predeploy": "tsc && cd ./svelte-draft-editor && npm run build",
+    "deploy": "cdk deploy --profile personal"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rchangmh/draft-editor.git"
+  "devDependencies": {
+    "@aws-cdk/assert": "1.70.0",
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
+    "aws-cdk": "^1.152.0",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^8.1.0",
+    "typescript": "~3.9.7"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/rchangmh/draft-editor/issues"
-  },
-  "homepage": "https://github.com/rchangmh/draft-editor#readme"
+  "dependencies": {
+    "@aws-cdk/aws-s3": "^1.74.0",
+    "@aws-cdk/aws-s3-deployment": "^1.74.0",
+    "@aws-cdk/core": "1.74.0",
+    "source-map-support": "^0.5.16"
+  }
 }

@@ -1,7 +1,7 @@
 <script>
 
   // import Editor from './Editor.svelte'
-  import MyEditor from './MyEditor.svelte'
+  import Editor from './Editor.svelte'
   import Heart from './Heart.svelte'
   import { onMount } from 'svelte'
   import { fade, fly } from 'svelte/transition'
@@ -10,19 +10,37 @@
     wordCountWritten, 
     wordCountUnwritten, 
     dark, 
-    fontSize,
-    width } from './store.js'
+    fontSize } from './store.js'
 
   let menu = false
-  
+
   // Dark Mode
   $: document.documentElement.setAttribute('class', $dark ? 'dark-mode' : '')
 
-  // Keep width within range.
-  $: if ($width > 1200) { $width -= 25 } 
-    else if ($width < 500) { $width += 25 }
+  // Change Width
+  let width = parseInt(localStorage.getItem('width')) || 750
+  $: localStorage.setItem('width', width)
+  $: if (width > 1200) { width -= 25 } 
+    else if (width < 250) { width += 25 }
 
-  // Keep font within range.
+  onMount(() => {
+    document.styleSheets[0].insertRule(`
+      .ce-paragraph, .cdx-block, .ce-block__content, .ce-block { 
+        margin: 0 auto;
+        max-width: ${width}px;
+      }`)
+  })
+
+  function changeWidth (num) {
+    let index = document.styleSheets[0].cssRules.length
+    document.styleSheets[0].insertRule(`
+      .ce-paragraph, .cdx-block, .ce-block__content, .ce-block { 
+        margin: 0 auto;
+        max-width: ${width += num}px !important;
+      }`, index)
+  }
+
+  // Change Font Size
   $: if ($fontSize > 30) { $fontSize -= 1 } 
     else if ($fontSize < 1) { $fontSize += 1 }
 
@@ -56,6 +74,10 @@
       class=menu 
       in:fly={{ x: -200, duration: 350 }} 
       out:fade>
+      <button
+        on:click={clear}>
+        ❌
+      </button>
       <button 
         on:click={() => $fontSize += 1}>
         ➕
@@ -65,12 +87,12 @@
         ➖
       </button>
       <button 
-        on:click={() => $width += 25}>
-        ◀▶
+        on:click={() => changeWidth(-25)}>
+        ▶◀
       </button>
       <button 
-        on:click={() => $width -= 25}>
-        ▶◀
+        on:click={() => changeWidth(25)}>
+        ◀▶
       </button>
       <button 
         on:click={() => $dark ? $dark = 0 : $dark = 1}> 
@@ -82,8 +104,8 @@
   <!-- Editor  -->
 
   <div class='editor {$dark ? 'dark-mode' : ''}'>
-    <MyEditor editorName='Written'/>
-    <MyEditor editorName='Unwritten'/>
+    <Editor editorName='Written'/>
+    <Editor editorName='Unwritten'/>
   </div>
 
   <!-- Progress  -->
@@ -125,22 +147,22 @@
 
   @font-face {
     font-family: 'AGaramond';
-    src: url('/fonts/AGaramondPro-Regular.woff2') format('woff2');
+    src: url('/AGaramondPro-Regular.woff2') format('woff2');
   }
 
   @font-face {
     font-family: 'Graphik';
-    src: url('/fonts/Graphik-Regular-Web.woff2') format('woff2');
+    src: url('/Graphik-Regular-Web.woff2') format('woff2');
   }
 
   @font-face {
     font-family: 'Lyon';
-    src: url('/fonts/Lyon-Text-Regular.woff2') format('woff2');
+    src: url('/Lyon-Text-Regular.woff2') format('woff2');
   }
 
   @font-face {
     font-family: 'Noe';
-    src: url('/fonts/Noe-Text-Black.woff2') format('woff2');
+    src: url('/Noe-Text-Black.woff2') format('woff2');
   }
 
   /* Menu */
