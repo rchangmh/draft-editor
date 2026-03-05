@@ -1,0 +1,3 @@
+name: svelte-editor
+runtime: nodejs
+description: An editor built with Svelte.
